@@ -12,6 +12,9 @@ from scipy.interpolate import griddata
 
 import matplotlib.pyplot as plt
 
+from kljun.calc_footprint_FFP import FFP
+from kljun.calc_footprint_FFP_climatology import FFP_climatology
+
 SHAPE_FACTOR = 1.5
 VON_KARMAN_CONSTANT = 0.41
 
