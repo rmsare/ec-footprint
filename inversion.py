@@ -1,5 +1,5 @@
 """
-Least squares inversion for surface flux using footprint functions and measured atmospheric fluxes  
+Least squares inversion for surface flux using footprint functions and measured atmospheric fluxes and covariates  
 """
 
 import numpy as np
