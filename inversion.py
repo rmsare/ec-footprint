@@ -1,5 +1,5 @@
 """
-Least squares inversion for surface flux using footprint functions and measured atmospheric fluxes  
+Least squares inversion for surface flux using footprint functions and measured atmospheric fluxes and covariates  
 """
 
 import numpy as np
@@ -56,7 +56,7 @@ def invert_data(G, d, dx, thresh=20000):
     laplacian = diff(m, k=2) / dx**2
     reg = norm(laplacian, 2)
     
-    objective = Minimize(loss + lamdb*red)
+    objective = Minimize(loss + lambd*reg)
     constraints = [m >= 0, 
                    m <= thresh]
     
