@@ -87,8 +87,8 @@ def FFP_climatology(zm=None, z0=None, umean=None, h=None, ol=None, sigmav=None, 
     flag_err = 0
         
     # Check existence of required input pars
-    if None in [zm, h, ol, sigmav, ustar] or (z0 is None and umean is None):
-        raise_ffp_exception(1, verbosity)
+    #if None in [zm, h, ol, sigmav, ustar] or (z0 is None and umean is None):
+    #    raise_ffp_exception(1, verbosity)
 
     # Convert all input items to lists
     if not isinstance(zm, list): zm = [zm]
