@@ -17,48 +17,29 @@ if __name__ == "__main__":
     
     data = pd.read_pickle('data/EC_HSL_02252018.pk')
 
-    #n_days = 1
-    #i1 = int(24 * 2 * n_days) 
-
-    i0 = 0
-    i1 = data.shape[0] - 1
-    indices = np.linspace(i0, i1, i1 - i0).astype(int)
-
-    date0 = data.index[i0]
-    date1 = data.index[i1]
-
-    n = 0
-
-    print('Calculating footprint climatology for {} to {}...'.format(date0, date1))
-
-    Ls = []
-    sigma_vs = []
-    wind_dirs = []
-    u_stars = []
-
-    for i, idx in enumerate(indices):
-        wind_dir = data.iloc[idx]['wind_dir']
-        u_star = data.iloc[idx]['u*']
-
-        if wind_dir >=0 and wind_dir <= 360 and u_star >= 0.1:
-            L = data.iloc[idx]['L']
-            v_var = data.iloc[idx]['v_var']
-            sigma_v = np.sqrt(v_var)
-            
-            wind_dirs.append(wind_dir)
-            u_stars.append(u_star)
-            Ls.append(L)
-            sigma_vs.append(sigma_v)
-            n += 1
+    year = 2014
+    date0 = pd.datetime(year, 1, 1)
+    date1 = pd.datetime(year, 12, 31)
+    time_mask = (data.index >= date0) & (data.index <= date1) 
     
-    print('Using {}/{} observations'.format(n, len(indices)))
+    valid_mask = (data['wind_dir'] >= 0) & (data['wind_dir'] <= 360) & (data['u*'] >= 0.1)
+    mask = time_mask & valid_mask
 
+    Ls = list(data.loc[mask]['L'])
+    sigma_vs = list(np.sqrt(data.loc[mask]['v_var']))
+    wind_dirs = list(data.loc[mask]['wind_dir'])
+    u_stars = list(data.loc[mask]['u*'])
     zms = list(zm * np.ones_like(Ls))
     z0s = list(z0 * np.ones_like(Ls))
     hs = list(h * np.ones_like(Ls))
+
+    n = len(Ls)
     
     rs = [0.5, 0.75, 0.9]
     
+    print('Calculating footprint climatology for {} to {}...'.format(date0, date1))
+    print('Using {}/{} observations'.format(n, np.sum(time_mask)))
+
     res = FFP_climatology(zm=zms, 
                           z0=z0s, 
                           h=hs, 
@@ -91,7 +72,7 @@ if __name__ == "__main__":
     ax.set_ylabel('N [m]', fontsize=12)
     ax.set_aspect(1)
 
-    plt.savefig('footprint_full.png', dpi=300)
-    np.save('footprint_data_full.npy', [X, Y, climatology])
+    plt.savefig('footprint_{}.png'.format(year), dpi=300)
+    np.save('footprint_data_{}.npy'.format(year), [X, Y, climatology])
 
     plt.show()
