@@ -35,6 +35,9 @@ def calculate_footprint(start, stop, directory=''):
     
     rs = [0.5, 0.75, 0.9]
     
+    start = start.strftime('%Y-%m-%d')
+    stop = stop.strftime('%Y-%m-%d')
+
     print('-' * 80)
     print('Calculating footprint climatology for {} to {}...'.format(start, stop))
     print('Using {}/{} observations'.format(n, np.sum(time_mask)))
@@ -66,13 +69,11 @@ def calculate_footprint(start, stop, directory=''):
     cbar.set_label('Flux contribution [m$^{-2}$]', fontsize=12)
     
     ax = plt.gca()
-    ax.set_title('{} to {}'.format(date0, date1))
+    ax.set_title('{} to {}'.format(start, stop))
     ax.set_xlabel('E [m]', fontsize=14)
     ax.set_ylabel('N [m]', fontsize=14)
     ax.set_aspect(1)
 
-    start = start.strftime('%Y-%m-%d')
-    stop = stop.strftime('%Y-%m-%d')
     plt.savefig(directory + 'footprint_{}_{}.png'.format(start, stop), dpi=300)
     np.save(directory + 'footprint_data_{}_{}.npy'.format(start, stop), [X, Y, climatology])
 
