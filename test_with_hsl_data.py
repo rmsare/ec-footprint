@@ -8,7 +8,8 @@ from progressbar import Bar, ETA, ProgressBar
 from footprint import KljunFootprint as Footprint
 from kljun.calc_footprint_FFP_climatology import FFP_climatology
 
-if __name__ == "__main__":
+
+def calculate_footprint(start, stop, directory=''):
 
     zm = 6. # m 
     h = 1000 # m
@@ -17,12 +18,9 @@ if __name__ == "__main__":
     
     data = pd.read_pickle('data/EC_HSL_02252018.pk')
 
-    year = 2014
-    date0 = pd.datetime(year, 1, 1)
-    date1 = pd.datetime(year, 12, 31)
-    time_mask = (data.index >= date0) & (data.index <= date1) 
+    time_mask = (data.index >= start) & (data.index <= stop) 
     
-    valid_mask = (data['wind_dir'] >= 0) & (data['wind_dir'] <= 360) & (data['u*'] >= 0.1)
+    valid_mask = (data['wind_dir'] >= 0) & (data['wind_dir'] <= 360) & (data['u*'] >= 0.1) & data['daytime']
     mask = time_mask & valid_mask
 
     Ls = list(data.loc[mask]['L'])
@@ -37,7 +35,8 @@ if __name__ == "__main__":
     
     rs = [0.5, 0.75, 0.9]
     
-    print('Calculating footprint climatology for {} to {}...'.format(date0, date1))
+    print('-' * 80)
+    print('Calculating footprint climatology for {} to {}...'.format(start, stop))
     print('Using {}/{} observations'.format(n, np.sum(time_mask)))
 
     res = FFP_climatology(zm=zms, 
@@ -49,7 +48,7 @@ if __name__ == "__main__":
                           wind_dir=wind_dirs,
                           rs=rs,
                           crop=True,
-                          pulse=1000)
+                          verbosity=0)
 
     X = res['x_2d']
     Y = res['y_2d']
@@ -63,16 +62,34 @@ if __name__ == "__main__":
     for x, y, r in zip(Xc, Yc, rs):
         plt.plot(x, y, 'w-')
         plt.text(x[-1], y[-1] + 7.5, '{:.0f}'.format(100 * r), color='w', fontsize=10)
-    cbar = plt.colorbar(p, aspect=10, shrink=0.75, orientation='horizontal')
+    cbar = plt.colorbar(p, aspect=10, shrink=0.5, orientation='horizontal')
     cbar.set_label('Flux contribution [m$^{-2}$]', fontsize=12)
     
     ax = plt.gca()
     ax.set_title('{} to {}'.format(date0, date1))
-    ax.set_xlabel('E [m]', fontsize=12)
-    ax.set_ylabel('N [m]', fontsize=12)
+    ax.set_xlabel('E [m]', fontsize=14)
+    ax.set_ylabel('N [m]', fontsize=14)
     ax.set_aspect(1)
 
-    plt.savefig('footprint_{}.png'.format(year), dpi=300)
-    np.save('footprint_data_{}.npy'.format(year), [X, Y, climatology])
+    start = start.strftime('%Y-%m-%d')
+    stop = stop.strftime('%Y-%m-%d')
+    plt.savefig(directory + 'footprint_{}_{}.png'.format(start, stop), dpi=300)
+    np.save(directory + 'footprint_data_{}_{}.npy'.format(start, stop), [X, Y, climatology])
 
     plt.show()
+
+
+if __name__ == "__main__":
+    years = [2014, 2015, 2016, 2017]
+    months = np.linspace(1, 12, 12, dtype=int)
+
+    for year in years:
+        start = pd.datetime(year, 1, 1)
+        stop = pd.datetime(year + 1, 1, 1)
+        calculate_footprint(start, stop, directory='annual/')
+    
+    for year in years:
+        for month in months:
+            start = pd.datetime(year, month, 1)
+            stop = pd.datetime(year, month, 31)
+            calculate_footprint(start, stop, directory='monthly/')
