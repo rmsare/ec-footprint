@@ -7,11 +7,12 @@ import pandas as pd
 import scipy
 from scipy.sparse import lil_matrix, issparse
 
-from cvxpy import *
+from cvxpy import diff, norm
+from cvxpy import Constant, Minimize, Parameter, Problem, Variable  
 
 from footprint import KljunFootprint
 
-BOUNDARY_LAYER_HEIGHT = 1000 # m
+BOUNDARY_LAYER_HEIGHT = 2000 # m
 EC_STATION_HEIGHT = 4.1 # m
 ROUGHNESS_LENGTH_SCALE = 0.03 # m
 
@@ -64,3 +65,64 @@ def invert_data(G, d, dx, thresh=20000):
     problem.solve()
 
     return m.value()
+
+def test_climatology(data, nsteps, grid_size):
+    climatology = np.zeros(grid_size)
+    
+    for i in range(nsteps):
+        footprint = calculate_footprint(data, i)
+        climatology += footprint.footprint
+
+    climatology /= nsteps
+
+    return footprint.X, footprint.Y, climatology
+
+
+def test_inversion(data):
+    
+    nobs = len(data['flux'])
+
+    print('Number of observations:\t{}'.format(nobs))
+
+    f = calculate_footprint(data, 0).footprint
+    s = f.shape
+    
+    print('Number of grid points:\t{:d}'.format(np.prod(s)))
+
+    print("Forming G...")
+    #G = form_G_from_footprints(data, np.prod(s), grid_shape=s)
+
+    print("Performing inversion...")
+    #m = invert_data(G, d, dx)
+
+if __name__ == "__main__":
+    from scipy.io import loadmat
+    import matplotlib.pyplot as plt
+    from timeit import default_timer as timer
+
+    from kljun.calc_footprint_FFP_climatology import FFP_climatology
+
+    data = loadmat('HSL2013.mat')
+    data['wind_dir'] = data['wd']
+    data['sigma_v'] = data['sigv']
+    
+    nobs = 10 
+    
+    start = timer()
+    #X, Y, climatology = test_climatology(data, nsteps, s)
+    zo = list(0.01*np.ones((nobs, 1)))
+    zm = list(4.1*np.ones((nobs, 1)))
+    h = list(BOUNDARY_LAYER_HEIGHT*np.ones((nobs, 1)))
+
+    results = FFP_climatology(zm, zo, None, h, list(data['L'][:nobs,0]), list(data['sigma_v'][:nobs,0]), list(data['ustar'][:nobs,0]), list(data['wind_dir'][:nobs,0]))
+    X = results['x_2d']
+    Y = results['y_2d']
+    climatology = results['fclim_2d']
+    stop = timer()
+    print('Runtime: {:.2f} s'.format(stop - start))
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    im = ax.contourf(X, Y, climatology)
+    plt.colorbar(im)
