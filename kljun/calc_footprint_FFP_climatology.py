@@ -87,8 +87,8 @@ def FFP_climatology(zm=None, z0=None, umean=None, h=None, ol=None, sigmav=None, 
     flag_err = 0
         
     # Check existence of required input pars
-    if None in [zm, h, ol, sigmav, ustar] or (z0 is None and umean is None):
-        raise_ffp_exception(1, verbosity)
+    #if None in [zm, h, ol, sigmav, ustar] or (z0 is None and umean is None):
+    #  raise_ffp_exception(1, verbosity)
 
     # Convert all input items to lists
     if not isinstance(zm, list): zm = [zm]
@@ -400,6 +400,9 @@ def FFP_climatology(zm=None, z0=None, umean=None, h=None, ol=None, sigmav=None, 
             x_2d = x_2d[jrange,irange]
             y_2d = y_2d[jrange,irange]
             fclim_2d = fclim_2d[jrange,irange]
+    
+    print(clevs)
+    plot_footprint(x_2d, y_2d, fclim_2d, clevs=clevs) 
 
     #===========================================================================
     # Fill output structure
@@ -414,39 +417,39 @@ def FFP_climatology(zm=None, z0=None, umean=None, h=None, ol=None, sigmav=None, 
 #===============================================================================
 def check_ffp_inputs(ustar, sigmav, h, ol, wind_dir, zm, z0, umean, rslayer, verbosity):
     # Check passed values for physical plausibility and consistency
-    if zm <= 0.:
-        raise_ffp_exception(2, verbosity)
-        return False
-    if z0 is not None and umean is None and z0 <= 0.:
-        raise_ffp_exception(3, verbosity)
-        return False
-    if h <= 10.:
-        raise_ffp_exception(4, verbosity)
-        return False
-    if zm > h :
-        raise_ffp_exception(5, verbosity)
-        return False
-    if z0 is not None and umean is None and zm <= 12.5*z0:
-        if rslayer is 1:
-            raise_ffp_exception(6, verbosity)
-        else:
-            raise_ffp_exception(20, verbosity)
-            return False
-    if float(zm)/ol <= -15.5:
-        raise_ffp_exception(7, verbosity)
-        return False
-    if sigmav <= 0:
-        raise_ffp_exception(8, verbosity)
-        return False
-    if ustar <= 0.1:
-        raise_ffp_exception(9, verbosity)
-        return False
-    if wind_dir > 360:
-        raise_ffp_exception(10, verbosity)
-        return False
-    if wind_dir < 0:
-        raise_ffp_exception(10, verbosity)
-        return False
+   # if zm <= 0.:
+   #     raise_ffp_exception(2, verbosity)
+   #     return False
+   # if z0 is not None and umean is None and z0 <= 0.:
+   #     raise_ffp_exception(3, verbosity)
+   #     return False
+   # if h <= 10.:
+   #     raise_ffp_exception(4, verbosity)
+   #     return False
+   # if zm > h :
+   #     raise_ffp_exception(5, verbosity)
+   #     return False
+   # if z0 is not None and umean is None and zm <= 12.5*z0:
+   #     if rslayer is 1:
+   #         raise_ffp_exception(6, verbosity)
+   #     else:
+   #         raise_ffp_exception(20, verbosity)
+   #         return False
+   # if float(zm)/ol <= -15.5:
+   #     raise_ffp_exception(7, verbosity)
+   #     return False
+   # if sigmav <= 0:
+   #     raise_ffp_exception(8, verbosity)
+   #     return False
+   # if ustar <= 0.1:
+   #     raise_ffp_exception(9, verbosity)
+   #     return False
+   # if wind_dir > 360:
+   #     raise_ffp_exception(10, verbosity)
+   #     return False
+   # if wind_dir < 0:
+   #     raise_ffp_exception(10, verbosity)
+   #     return False
     return True
 
 #===============================================================================
@@ -524,7 +527,7 @@ def plot_footprint(x_2d, y_2d, fs, clevs=None, show_footprint=True, normalize=No
 
     if clevs is not None:
         #Temporary patch for pyplot.contour requiring contours to be in ascending orders
-        clevs = clevs[::-1]
+        #clevs = clevs[::-1]
 
         #Eliminate contour levels that were set to None
         #(e.g. because they extend beyond the defined domain)
